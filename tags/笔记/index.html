@@ -1,0 +1,471 @@
+
+	<!DOCTYPE html>
+	<html class="scrollbar">
+		
+
+<head><meta name="generator" content="Hexo 3.9.0">
+	<meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <title>
+    
+      tag: 笔记 | JOINER | BLOG
+    
+  </title>
+  <meta name="author" content="Joiner Ren">
+  <meta name="keywords" content="Javascript | Joiner | renzhaosy">
+  <meta name="description" content>
+	<!-- favicon -->
+  <link rel="shortcut icon" href="https://image.cdn.renzhaosy.cn/favicon/favicon.png">
+
+  <!-- css -->
+  <link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  
+  
+
+    <!-- jquery -->
+	<script src="/js/jquery-2.1.1.min.js"></script>
+
+  <!-- leancloud -->
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+<script src="/js/leancloud.js"></script>
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+	<body>
+		<!-- Preloader -->
+
+	<div id="preloader">
+		<div class="pre-container">
+			
+				<div class="transition">
+					<div class="three-bounce1"></div>
+					<div class="three-bounce2"></div>
+					<div class="three-bounce3"></div>
+				</div>
+						
+		</div>
+	</div>
+
+
+<!-- header -->
+<header class="fixbackground" data-img-mode="random" data-normal-src="/" data-random-max="3" data-random-src="https://image.cdn.renzhaosy.cn/random-img/">
+	<div class="mask">
+		<div class="h-header">
+			<div id="logo-S">
+				
+					<a href="/">
+						<img src="https://image.cdn.renzhaosy.cn/logo/logo.png" alt="Logo">
+					</a>
+				
+			</div>
+			<!-- Navigation in header(id="navigation-S") -->
+			<div id="navigation-S">
+				<ul>
+					
+						<li class="menu-home">
+							<a href="/" class="menu-item-home">主页</a>
+						</li>
+					
+						<li class="menu-archive">
+							<a href="/archives" class="menu-item-archive">归档</a>
+						</li>
+					
+						<li class="menu-tags">
+							<a href="/tags" class="menu-item-tags">标签</a>
+						</li>
+					
+						<li class="menu-document">
+							<a href="https://renzhaosy.cn/document" class="menu-item-document">文档库</a>
+						</li>
+					
+						<li class="menu-gallery">
+							<a href="/gallery" class="menu-item-gallery">相册</a>
+						</li>
+					
+
+					
+				</ul>			
+			</div>				
+		</div>
+
+		<div class="h-body">	
+			<!-- motto -->
+			
+				<div id="page-motto">
+					<p class="motto">
+						
+					</p>
+				</div>
+			
+
+			<div id="navigation-H">
+				<!-- Page title -->
+				<p>
+					
+						标签
+					
+				</p>
+				<!-- Progress bar -->
+				<div id="progress-bar"></div>
+
+				<!-- Progress percent -->
+				<div id="progress-percentage">
+					<h1>0.0%</h1>
+				</div>
+			</div>
+		</div>
+		
+		<!-- others: such as time... -->			
+		<div class="h-footer">
+			<ul>
+				<!-- <li>
+					<a><i class="fa fa-camera-retro" onclick="changeHeaderBg()"></i>切换背景</a>
+				</li> -->
+				<li>
+					<a href="javascript:;" id="read-more"><i class="fa fa-angle-double-down"></i>继续阅读</a>
+				</li>
+				<!-- <li>
+					<a href="https://github.com/Sariay/hexo-theme-Annie" target="_blank"><i class="fa fa-download"></i>克隆主题</a>
+				</li> -->
+			</ul>
+		</div>
+		
+		<!-- This is only a demo, please go to "https://time.is" to set your city time! -->
+<style type="text/css">
+	.header-date {
+		position: absolute;
+		left: 40px;
+		bottom: 30px;
+		writing-mode: tb-rl;
+		font-size: 36px;
+	}	
+	.header-date a {
+		border-bottom: none;
+	}
+	@media only screen and (max-width: 768 ) {
+		.header-date {
+			position: absolute;
+			left: 40px;
+			bottom: 30px;
+			writing-mode: tb-rl;
+			font-size: 20px;
+		}			
+	}
+</style>
+<div class="header-date">
+	<a href="https://time.is/Beijing" id="time_is_link" rel="nofollow" ></a>
+	<span id="Beijing_z43d"></span>
+</div>
+<script src="//widget.time.is/zh.js"></script>
+<script>
+	time_is_widget.init({
+		Beijing_z43d:{
+			template:"DATE", 
+			date_format:"year年 monthname dnum日"
+		}
+	});
+</script>
+</header>
+
+<!-- Navigation in div(id="navigation-H") -->
+<a class="nav-trigger">
+	<span></span>
+</a>
+
+<nav class="nav-container" id="cd-nav">
+	<div class="nav-header">
+		<h3>Navigation</h3>
+		<a href="javascript:;" class="nav-close"></a>
+	</div>
+	<div class="nav-body">
+		<ul>
+			
+				<li class="menu-home">
+					<a href="/" class="menu-item-home">主页</a>
+				</li>
+			
+				<li class="menu-archive">
+					<a href="/archives" class="menu-item-archive">归档</a>
+				</li>
+			
+				<li class="menu-tags">
+					<a href="/tags" class="menu-item-tags">标签</a>
+				</li>
+			
+				<li class="menu-document">
+					<a href="https://renzhaosy.cn/document" class="menu-item-document">文档库</a>
+				</li>
+			
+				<li class="menu-gallery">
+					<a href="/gallery" class="menu-item-gallery">相册</a>
+				</li>
+			
+
+			
+		</ul>
+	</div>
+
+	<div class="nav-footer">
+		<ul>
+	 
+</ul>
+	</div>
+</nav>
+
+		
+		<!--main-->
+		<main>
+			<!--
+	时间：2018-11-08
+	描述：The archive module refers to 'https://1984n.win/archives-post/' & 'http://1900.live/one-theme/', include js、css. Relevant rights reserved by them! 
+-->
+<div class="layout-archive">
+    <div class="i-container">
+        <i class="fa fa-book">
+			
+				笔记 2 篇
+			
+		</i>
+    </div>
+
+    <!-- Archive by year, display in page( archive ) -->
+    <div id="layout-archive-year" style="display: 
+        
+        
+        <ul>
+            
+                <li>
+                    <a href="/2019/11/09/github-action/">
+            			<em year="2019">
+                            11-09
+                        </em>
+        			    <span itemprop="name">
+                            GitHub Action部署Hexo静态页面
+                        </span>
+        			    
+                			<a href="/tags/笔记/" class="tag">
+                				笔记
+                			</a>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a href="/2019/04/05/nodenv/">
+            			<em year="2019">
+                            04-05
+                        </em>
+        			    <span itemprop="name">
+                            Nodenv管理Node版本
+                        </span>
+        			    
+                			<a href="/tags/工具/" class="tag">
+                				工具
+                			</a>
+                        
+                			<a href="/tags/node/" class="tag">
+                				node
+                			</a>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a href="/2019/03/29/tasks-microtasks-queues/">
+            			<em year="2019">
+                            03-29
+                        </em>
+        			    <span itemprop="name">
+                            [译]Tasks, microtasks, queues and schedules
+                        </span>
+        			    
+                			<a href="/tags/Javascript/" class="tag">
+                				Javascript
+                			</a>
+                        
+                			<a href="/tags/Tasks/" class="tag">
+                				Tasks
+                			</a>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a href="/2018/03/05/redux/">
+            			<em year="2018">
+                            03-05
+                        </em>
+        			    <span itemprop="name">
+                            Redux 原理
+                        </span>
+        			    
+                			<a href="/tags/react/" class="tag">
+                				react
+                			</a>
+                        
+                			<a href="/tags/redux/" class="tag">
+                				redux
+                			</a>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a href="/2016/06/23/git/">
+            			<em year="2016">
+                            06-23
+                        </em>
+        			    <span itemprop="name">
+                            git 常用命令
+                        </span>
+        			    
+                			<a href="/tags/笔记/" class="tag">
+                				笔记
+                			</a>
+                        
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+     <!-- Archive by month, called by page( categories, tags... ) -->
+    <div id="layout-archive-month" style="display: 
+         
+            block"> 
+        
+
+        
+        
+            
+
+            
+                
+                <h3 class="archive-year">
+                    <!-- <a href="/archives/2019/11"> -->
+                    <a>
+                        2019 - 11
+                    </a>
+                </h3>
+            
+
+            <ul>
+                <li>
+                    <a href="/2019/11/09/github-action/">
+                        <em>
+                            11-09
+                        </em>
+                        <span itemprop="name">
+                            GitHub Action部署Hexo静态页面
+                        </span>
+                        
+                            <a href="/tags/笔记/" class="tag">
+                                笔记
+                            </a>
+                               
+                    </a>
+                </li>
+            </ul>
+        
+            
+
+            
+                
+                <h3 class="archive-year">
+                    <!-- <a href="/archives/2016/06"> -->
+                    <a>
+                        2016 - 06
+                    </a>
+                </h3>
+            
+
+            <ul>
+                <li>
+                    <a href="/2016/06/23/git/">
+                        <em>
+                            06-23
+                        </em>
+                        <span itemprop="name">
+                            git 常用命令
+                        </span>
+                        
+                            <a href="/tags/笔记/" class="tag">
+                                笔记
+                            </a>
+                               
+                    </a>
+                </li>
+            </ul>
+        
+    </div>
+
+    
+        
+	
+
+    
+</div>
+		</main>
+		
+		<!--footer-->
+		<footer>
+	<div class="social">
+		<ul>
+	 
+</ul>
+	</div>
+		
+	<div class="copyright">
+		<p>
+			 
+				&copy;2019, content by Joiner Ren. All Rights Reserved.
+			
+			
+			
+
+	<!-- busuanzi -->
+	<!-- busuanzi -->
+
+
+
+		</p>
+		<p>
+			<a href="http://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a> Theme <a href="https://github.com/Sariay/hexo-theme-Annie" title="Annie" target="_blank" rel="noopener">Annie</a>. 					
+		</p>
+	</div>		
+</footer>
+		
+    <!-- set '1' to show motto in all pages! -->
+
+	<script src="/js/motto.js"></script>
+	<script type="text/javascript">
+		$(".motto").html( getMingYanContent() );
+	</script>	
+
+
+
+
+
+
+
+<!--back to top-->
+
+    
+	<div id="totop">
+  		<a href="javascript:;"  name="TOTOP" class="fa fa-arrow-up" ></a>
+	</div>
+	<div id="tobuttom">
+		<a href="javascript:;"  name="TOBUTTOM" class="fa fa-arrow-down" ></a>
+	</div>
+ 
+
+
+ 
+
+<script src="/js/vibrant.js"></script>
+<script src="/js/chinese.js"></script>
+<script src="/js/main.js"></script>
+
+	</body>
+	</html>

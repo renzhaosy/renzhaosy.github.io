@@ -1,0 +1,845 @@
+
+	<!DOCTYPE html>
+	<html class="scrollbar">
+		
+
+<head><meta name="generator" content="Hexo 3.9.0">
+	<meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <title>
+    
+      [译]Tasks, microtasks, queues and schedules | JOINER | BLOG
+    
+  </title>
+  <meta name="author" content="Joiner Ren">
+  <meta name="keywords" content="Javascript | Joiner | renzhaosy">
+  <meta name="description" content>
+	<!-- favicon -->
+  <link rel="shortcut icon" href="https://image.cdn.renzhaosy.cn/favicon/favicon.png">
+
+  <!-- css -->
+  <link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  
+  
+    <link rel="stylesheet" href="/css/task.css">
+
+
+    <!-- jquery -->
+	<script src="/js/jquery-2.1.1.min.js"></script>
+
+  <!-- leancloud -->
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+<script src="/js/leancloud.js"></script>
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+	<body>
+		<!-- Preloader -->
+
+	<div id="preloader">
+		<div class="pre-container">
+			
+				<div class="transition">
+					<div class="three-bounce1"></div>
+					<div class="three-bounce2"></div>
+					<div class="three-bounce3"></div>
+				</div>
+						
+		</div>
+	</div>
+
+
+<!-- header -->
+<header class="fixbackground" data-img-mode="random" data-normal-src="/" data-random-max="3" data-random-src="https://image.cdn.renzhaosy.cn/random-img/">
+	<div class="mask">
+		<div class="h-header">
+			<div id="logo-S">
+				
+					<a href="/">
+						<img src="https://image.cdn.renzhaosy.cn/logo/logo.png" alt="Logo">
+					</a>
+				
+			</div>
+			<!-- Navigation in header(id="navigation-S") -->
+			<div id="navigation-S">
+				<ul>
+					
+						<li class="menu-home">
+							<a href="/" class="menu-item-home">主页</a>
+						</li>
+					
+						<li class="menu-archive">
+							<a href="/archives" class="menu-item-archive">归档</a>
+						</li>
+					
+						<li class="menu-tags">
+							<a href="/tags" class="menu-item-tags">标签</a>
+						</li>
+					
+						<li class="menu-document">
+							<a href="https://renzhaosy.cn/document" class="menu-item-document">文档库</a>
+						</li>
+					
+						<li class="menu-gallery">
+							<a href="/gallery" class="menu-item-gallery">相册</a>
+						</li>
+					
+
+					
+				</ul>			
+			</div>				
+		</div>
+
+		<div class="h-body">	
+			<!-- motto -->
+			
+				<div id="page-motto">
+					<p class="motto">
+						
+					</p>
+				</div>
+			
+
+			<div id="navigation-H">
+				<!-- Page title -->
+				<p>
+					
+						当前文章&nbsp;:&nbsp;《[译]Tasks, microtasks, queues and schedules》
+					
+				</p>
+				<!-- Progress bar -->
+				<div id="progress-bar"></div>
+
+				<!-- Progress percent -->
+				<div id="progress-percentage">
+					<h1>0.0%</h1>
+				</div>
+			</div>
+		</div>
+		
+		<!-- others: such as time... -->			
+		<div class="h-footer">
+			<ul>
+				<!-- <li>
+					<a><i class="fa fa-camera-retro" onclick="changeHeaderBg()"></i>切换背景</a>
+				</li> -->
+				<li>
+					<a href="javascript:;" id="read-more"><i class="fa fa-angle-double-down"></i>继续阅读</a>
+				</li>
+				<!-- <li>
+					<a href="https://github.com/Sariay/hexo-theme-Annie" target="_blank"><i class="fa fa-download"></i>克隆主题</a>
+				</li> -->
+			</ul>
+		</div>
+		
+		<!-- This is only a demo, please go to "https://time.is" to set your city time! -->
+<style type="text/css">
+	.header-date {
+		position: absolute;
+		left: 40px;
+		bottom: 30px;
+		writing-mode: tb-rl;
+		font-size: 36px;
+	}	
+	.header-date a {
+		border-bottom: none;
+	}
+	@media only screen and (max-width: 768 ) {
+		.header-date {
+			position: absolute;
+			left: 40px;
+			bottom: 30px;
+			writing-mode: tb-rl;
+			font-size: 20px;
+		}			
+	}
+</style>
+<div class="header-date">
+	<a href="https://time.is/Beijing" id="time_is_link" rel="nofollow" ></a>
+	<span id="Beijing_z43d"></span>
+</div>
+<script src="//widget.time.is/zh.js"></script>
+<script>
+	time_is_widget.init({
+		Beijing_z43d:{
+			template:"DATE", 
+			date_format:"year年 monthname dnum日"
+		}
+	});
+</script>
+</header>
+
+<!-- Navigation in div(id="navigation-H") -->
+<a class="nav-trigger">
+	<span></span>
+</a>
+
+<nav class="nav-container" id="cd-nav">
+	<div class="nav-header">
+		<h3>Navigation</h3>
+		<a href="javascript:;" class="nav-close"></a>
+	</div>
+	<div class="nav-body">
+		<ul>
+			
+				<li class="menu-home">
+					<a href="/" class="menu-item-home">主页</a>
+				</li>
+			
+				<li class="menu-archive">
+					<a href="/archives" class="menu-item-archive">归档</a>
+				</li>
+			
+				<li class="menu-tags">
+					<a href="/tags" class="menu-item-tags">标签</a>
+				</li>
+			
+				<li class="menu-document">
+					<a href="https://renzhaosy.cn/document" class="menu-item-document">文档库</a>
+				</li>
+			
+				<li class="menu-gallery">
+					<a href="/gallery" class="menu-item-gallery">相册</a>
+				</li>
+			
+
+			
+		</ul>
+	</div>
+
+	<div class="nav-footer">
+		<ul>
+	 
+</ul>
+	</div>
+</nav>
+
+		
+		<!--main-->
+		<main>
+			<div class="layout-post">
+	
+	
+	<div class="article-title">
+		
+	<a href="/2019/03/29/tasks-microtasks-queues/" itemprop="url">
+		[译]Tasks, microtasks, queues and schedules
+	</a>
+
+	</div>
+
+	<div class="article-meta">
+		<span>
+			
+	发布于
+	<a href="/2019/03/29/tasks-microtasks-queues/" itemprop="url">
+		<time datetime="2019-03-29T20:12:14.000Z" itemprop="datePublished">
+	  		2019-03-29
+	  </time>
+	</a> 
+
+	/
+	更新于
+	<a href="/2019/03/29/tasks-microtasks-queues/" itemprop="url">
+		<time datetime="2019-03-29T20:12:14.000Z" itemprop="dateUpdated">
+	  		2019-11-09
+	  </time>
+	</a> 	
+
+		</span>
+		/
+		<span>
+			<i class="fa fa-tags"></i>
+			
+	
+		<a href="/tags/Javascript/" class=" ">
+			Javascript
+		</a>
+	
+		<a href="/tags/Tasks/" class=" ">
+			Tasks
+		</a>
+	
+		
+		</span>
+		/
+		
+
+
+
+	</div>
+
+	<div class="article-content" id="article-content">
+		<h1 id="译-Tasks-microtasks-queues-and-schedules"><a href="#译-Tasks-microtasks-queues-and-schedules" class="headerlink" title="[译]Tasks, microtasks, queues and schedules"></a>[译]Tasks, microtasks, queues and schedules</h1><p>这一篇是对 Jake Archibald 大大的  <a href="https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/" target="_blank" rel="noopener">Tasks, microtasks, queues and schedules - JakeArchibald.com</a> 这篇文章部分的汉译。哈哈，第一次尝试对外文的翻译，渣渣英语。。。</p>
+<p>下边开始正文。</p>
+<p>实际上，如果你更新喜欢看视频，<a href="https://twitter.com/philip_roberts" target="_blank" rel="noopener">Philip Roberts</a> 在 JSConf 中就 event loop 进行了一次很棒的演讲。虽然没有包含微任务（microtasks），但是很好的介绍了其他部分。无论如何，言归正传。。。</p>
+<p>先来一小段 Javascript:</p>
+<pre class="line-numbers language-js"><code class="language-js">console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"script start"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token function">setTimeout</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"setTimeout"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+Promise<span class="token punctuation">.</span><span class="token function">resolve</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+  <span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"promise1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span>
+  <span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"promise2"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"script end"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>log 日志会按照什么顺序出现？</p>
+<h3 id="Try-It"><a href="#Try-It" class="headerlink" title="Try It"></a>Try It</h3><p>正确答案：<code>script start</code>, <code>script end</code>, <code>promise1</code>, <code>promise2</code>, <code>setTimeout</code>。但是各个浏览器的支持却显得很狂野。</p>
+<p>Microsoft Edge、Firefox 40、iOS Safari 和桌面 Safari 8.0.8 中 <code>setTimeout</code> 会在 <code>promise1</code> 和 <code>promise2</code> 之前打印出来。这看起来很奇怪，因为 Firefox 39 and Safari 8.0.7 中打印结果是对的。</p>
+<h3 id="为什么会这样"><a href="#为什么会这样" class="headerlink" title="为什么会这样"></a>为什么会这样</h3><p>要理解这一点，你需要理解事件循环（event loop）是怎样处理宏任务和微任务的。如果你是第一次听说，这可能会让你大吃一惊。深呼吸。。。</p>
+<p>每一个线程都有自己的事件循环，所以每一个 web worker 也会有自己的事件循环，所以它可以独立执行。然而同一个 origin 上的所有窗口，因为它们相互之间可以同步通信，所以共享一个事件循环。事件循环一直运行，排队式地执行每一个宏任务。事件循环具有多个任务源，每个任务源内部确保了自己内部的执行顺序（比如：IndexedDB 规范定义了自己的执行顺序），而浏览器则决定在循环中的每一圈选择从哪个来源获取任务。</p>
+<p><code>宏任务</code>被安排好，这样浏览器可以从内部进入 JavaScript / DOM 领域，并确保这些操作按顺序发生。在任务之间，浏览器可以呈现更新。从鼠标点击到回调事件需要调度一个任务，比如解析 HTML,再比如上边的例子 <code>setTimeout</code></p>
+<p><code>setTimeout</code> 等待一个给定的延迟时间，然后为他的回调（callback）安排一个新的宏任务。这就是<code>setTimeout</code> 在<code>script end</code>之后被打印的原因。因为打印<code>script end</code> 属于第一个宏任务的一部分，并且<code>setTimeout</code> 在单独的一个宏任务中被打印。</p>
+<p><code>微任务（Microtasks）</code> 通常被安排来做<code>当前执行脚本之后发生的事情</code>，比如：对一些动作（actions）做出反应,或者对某些事件异步化而不对完整的新的宏任务造成影响。微任务队列会在每个宏任务结束时处理，并且此时没有其他的 JavaScript 在执行。在微任务期间产生的任何其他微任务都将添加到队列的末尾，并进行处理。微任务包括：观察者模式的 callbacks、promise callbacks等。</p>
+<p>一个 Promise 一旦完成，或者已经完成，它将为他的回调（callbacks）安排一个微任务。这个 Promise 完成之后的回调是异步的。所以执行<code>.then(yey, nay)</code> 会为完成的 Promise 在微任务队列中立即安排一个微任务。当前运行的 script 一定在微任务被处理之前结束，这就是<code>promise1</code>和<code>promise2</code>会在<code>script end</code>之后被打印的原因.而由于微任务处理永远发生在下一个宏任务之前，所以<code>promise1</code>和<code>promise2</code>在<code>setTimeout</code>之前被打印。</p>
+<p>所以，一步一步：</p>
+<pre class="line-numbers language-js"><code class="language-js">console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"script start"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token function">setTimeout</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"setTimeout"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+Promise<span class="token punctuation">.</span><span class="token function">resolve</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+  <span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"promise1"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span>
+  <span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"promise2"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"script end"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="不同浏览器有什么不同"><a href="#不同浏览器有什么不同" class="headerlink" title="不同浏览器有什么不同"></a>不同浏览器有什么不同</h3><p>有些浏览器打印结果是这样的：<code>script start</code>, <code>script end</code>, <code>setTimeout</code>, <code>promise1</code>, <code>promise2</code>。他们在<code>setTimeout</code>之后执行 promise 回调。这看起来像他们把执行 promise 回调当做新的宏任务的一部分而不是微任务。</p>
+<p>这是可以原谅的，因为 promise 来自 ECMAScript 而不是 HTML。ECMAScript 有和微任务很相似的<code>jobs</code>的概念，但是除了 <a href="https://esdiscuss.org/topic/the-initialization-steps-for-web-browsers#content-16" target="_blank" rel="noopener">vague mailing list discussions</a>之外联系不是很明确。不管怎样,promise 是微任务队列的一部分这是普遍的共识，并且有充分的理由。</p>
+<p>将 promise 视为宏任务会导致性能问题，因为和任务相关的回调事件可能不必延迟，例如渲染。这也可能会对交互的其他任务源造成不确认性，并且可能会中断交互的其他 APIs,但是稍后再进一步讨论。</p>
+<p>这是一个关于使用微任务来实现 promise 的 Edge 浏览器的 ticket。WebKit Nightly 做的是正确的，所以我认为 Safari 最终会修复这个问题，并且这个问题似乎在 FireFox43 中得到了修复。</p>
+<p>很有趣的是，Safari 和 Firefox 在这里都经历了一次回归，这已经被修复了。我想知道这是不是巧合。</p>
+<h3 id="Level-1-bossfight"><a href="#Level-1-bossfight" class="headerlink" title="Level 1 bossfight"></a>Level 1 bossfight</h3><p>在写这篇文章之前，我也搞错了。这是 html 结构：</p>
+<pre class="line-numbers language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>outer<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>inner<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p>按照接下来的 JS,如果点击<code>div.inner</code>会打印什么？</p>
+<pre class="line-numbers language-js"><code class="language-js"><span class="token comment" spellcheck="true">// Let's get hold of those elements</span>
+<span class="token keyword">var</span> outer <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">querySelector</span><span class="token punctuation">(</span><span class="token string">".outer"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> inner <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">querySelector</span><span class="token punctuation">(</span><span class="token string">".inner"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">// Let's listen for attribute changes on the</span>
+<span class="token comment" spellcheck="true">// outer element</span>
+<span class="token keyword">new</span> <span class="token class-name">MutationObserver</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"mutate"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">observe</span><span class="token punctuation">(</span>outer<span class="token punctuation">,</span> <span class="token punctuation">{</span>
+  attributes<span class="token punctuation">:</span> <span class="token boolean">true</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">// Here's a click listener…</span>
+<span class="token keyword">function</span> <span class="token function">onClick</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"click"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token function">setTimeout</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"timeout"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  Promise<span class="token punctuation">.</span><span class="token function">resolve</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"promise"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  outer<span class="token punctuation">.</span><span class="token function">setAttribute</span><span class="token punctuation">(</span><span class="token string">"data-random"</span><span class="token punctuation">,</span> Math<span class="token punctuation">.</span><span class="token function">random</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment" spellcheck="true">// …which we'll attach to both elements</span>
+inner<span class="token punctuation">.</span><span class="token function">addEventListener</span><span class="token punctuation">(</span><span class="token string">"click"</span><span class="token punctuation">,</span> onClick<span class="token punctuation">)</span><span class="token punctuation">;</span>
+outer<span class="token punctuation">.</span><span class="token function">addEventListener</span><span class="token punctuation">(</span><span class="token string">"click"</span><span class="token punctuation">,</span> onClick<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>在给出答案之前先跑一下代码。提示：日志不止出现一次</p>
+<h3 id="Test-it"><a href="#Test-it" class="headerlink" title="Test it"></a>Test it</h3><p>点击里边的的方块以触发点击事件：</p>
+<p>你的猜测不同吗？如果是这样，你可能仍然是对的。不幸的是，浏览器在这里并不完全一致：</p>
+<p><img src="https://image.cdn.renzhaosy.cn/post/task1.png" alt="task1.png"></p>
+<h3 id="谁是正确的？"><a href="#谁是正确的？" class="headerlink" title="谁是正确的？"></a>谁是正确的？</h3><p>调度点击事件是一个宏任务。Mutation observer 和 promise 回调 被视为微任务排列。<code>setTimeout</code> 回调被视为宏任务排列。下边是它怎么运行：</p>
+<pre class="line-numbers language-js"><code class="language-js"><span class="token comment" spellcheck="true">// Let's get hold of those elements</span>
+<span class="token keyword">var</span> outer <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">querySelector</span><span class="token punctuation">(</span><span class="token string">".outer"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> inner <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">querySelector</span><span class="token punctuation">(</span><span class="token string">".inner"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">// Let's listen for attribute changes on the</span>
+<span class="token comment" spellcheck="true">// outer element</span>
+<span class="token keyword">new</span> <span class="token class-name">MutationObserver</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"mutate"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">observe</span><span class="token punctuation">(</span>outer<span class="token punctuation">,</span> <span class="token punctuation">{</span>
+  attributes<span class="token punctuation">:</span> <span class="token boolean">true</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">// Here's a click listener…</span>
+<span class="token keyword">function</span> <span class="token function">onClick</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"click"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token function">setTimeout</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"timeout"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  Promise<span class="token punctuation">.</span><span class="token function">resolve</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"promise"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  outer<span class="token punctuation">.</span><span class="token function">setAttribute</span><span class="token punctuation">(</span><span class="token string">"data-random"</span><span class="token punctuation">,</span> Math<span class="token punctuation">.</span><span class="token function">random</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment" spellcheck="true">// …which we'll attach to both elements</span>
+inner<span class="token punctuation">.</span><span class="token function">addEventListener</span><span class="token punctuation">(</span><span class="token string">"click"</span><span class="token punctuation">,</span> onClick<span class="token punctuation">)</span><span class="token punctuation">;</span>
+outer<span class="token punctuation">.</span><span class="token function">addEventListener</span><span class="token punctuation">(</span><span class="token string">"click"</span><span class="token punctuation">,</span> onClick<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>所以 Chrome 是正确的。对我来说是新消息的一点是，微任务是在回调（只要没有其他的 JavaScript 在运行,就会触发回调）之后处理的，我认为这只限于宏任务结束。这条规则来自用于调用回调的 HTML 规范：</p>
+<blockquote>
+<p>If the stack of script settings objects is now empty, perform a microtask checkpoint — HTML: Cleaning up after a callback step 3</p>
+</blockquote>
+<p>并且除非我们正在处理微任务队列，否则微任务检查会涉及遍历整个微任务队列。同样，ECMAScript 这样解释<code>jobs</code>:</p>
+<blockquote>
+<p>Execution of a Job can be initiated only when there is no running execution context and the execution context stack is empty… — ECMAScript: Jobs and Job Queues</p>
+</blockquote>
+<blockquote>
+<p>只有在没有执行中的执行上下文并且执行上下文堆栈为空时，才能开始一个 Job 的执行。 - ECMAScript: Jobs and Job Queues</p>
+</blockquote>
+<p>。。。尽管<code>can be</code> 在 HTML 上下文中变成了 <code>must be</code></p>
+<h3 id="Level-1-boss’s-angry-older-brother"><a href="#Level-1-boss’s-angry-older-brother" class="headerlink" title="Level 1 boss’s angry older brother"></a>Level 1 boss’s angry older brother</h3><p>使用上边相同的例子，如果我们执行下边的代码会发生什么</p>
+<pre class="line-numbers language-js"><code class="language-js">inner<span class="token punctuation">.</span><span class="token function">click</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>这样会向之前一样调度事件，但是是使用 script 而不是真实点击。</p>
+<h3 id="Try-it"><a href="#Try-it" class="headerlink" title="Try it"></a>Try it</h3><p>下边是不同浏览器的表现:</p>
+<p><img src="https://image.cdn.renzhaosy.cn/post/task2.png" alt="task2.png"></p>
+<h3 id="为什么会不同？"><a href="#为什么会不同？" class="headerlink" title="为什么会不同？"></a>为什么会不同？</h3><p>下边是发生的过程：</p>
+<pre class="line-numbers language-js"><code class="language-js"><span class="token comment" spellcheck="true">// Let's get hold of those elements</span>
+<span class="token keyword">var</span> outer <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">querySelector</span><span class="token punctuation">(</span><span class="token string">".outer"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> inner <span class="token operator">=</span> document<span class="token punctuation">.</span><span class="token function">querySelector</span><span class="token punctuation">(</span><span class="token string">".inner"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">// Let's listen for attribute changes on the</span>
+<span class="token comment" spellcheck="true">// outer element</span>
+<span class="token keyword">new</span> <span class="token class-name">MutationObserver</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"mutate"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">observe</span><span class="token punctuation">(</span>outer<span class="token punctuation">,</span> <span class="token punctuation">{</span>
+  attributes<span class="token punctuation">:</span> <span class="token boolean">true</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">// Here's a click listener…</span>
+<span class="token keyword">function</span> <span class="token function">onClick</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"click"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token function">setTimeout</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"timeout"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  Promise<span class="token punctuation">.</span><span class="token function">resolve</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"promise"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  outer<span class="token punctuation">.</span><span class="token function">setAttribute</span><span class="token punctuation">(</span><span class="token string">"data-random"</span><span class="token punctuation">,</span> Math<span class="token punctuation">.</span><span class="token function">random</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment" spellcheck="true">// …which we'll attach to both elements</span>
+inner<span class="token punctuation">.</span><span class="token function">addEventListener</span><span class="token punctuation">(</span><span class="token string">"click"</span><span class="token punctuation">,</span> onClick<span class="token punctuation">)</span><span class="token punctuation">;</span>
+outer<span class="token punctuation">.</span><span class="token function">addEventListener</span><span class="token punctuation">(</span><span class="token string">"click"</span><span class="token punctuation">,</span> onClick<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>正确的顺序是：<code>click</code>, <code>click</code>, <code>promise</code>, <code>mutate</code>, <code>promise</code>, <code>timeout</code>, <code>timeout</code>。</p>
+<p>在每个监听回调被调用之后，遵循规范：</p>
+<blockquote>
+<p>If the stack of script settings objects is now empty, perform a microtask checkpoint</p>
+</blockquote>
+<p>— HTML: Cleaning up after a callback step 3</p>
+<p>前边的例子，表示微任务在监听回调（click监听）之间执行，但是<code>.click()</code>造成事件同步触发，所以调用<code>.click()</code>的 script 仍然在JS stack 中。而上边的规范保证了微任务不会打断正在执行中的JavaScript。意味着，我们不会在监听回调之间处理微任务队列，而是在所有的监听之后处理。</p>
+<h3 id="You-made-it"><a href="#You-made-it" class="headerlink" title="You made it!"></a>You made it!</h3><p>总结:</p>
+<ul>
+<li>宏任务按顺序执行，并且浏览器可能在他们之间渲染</li>
+<li>微任务按照顺序执行，并且按照下边规则被执行：<ul>
+<li>在每个回调之后，只要没有其他 javascript 正在执行</li>
+<li>在每一个宏任务执行完之后</li>
+</ul>
+</li>
+</ul>
+<p>今天就到这里，感谢你的阅读！<br>完。</p>
+	
+	</div>
+	
+	<div id="current-post-cover" data-scr="https://image.cdn.renzhaosy.cn/random-img/1.jpg"></div>
+
+	<!-- relate post, comment...-->
+	<div class="investment-container">
+		<div class="investment-header">
+			<div class="investment-title-1">
+				<div class="on">相关文章</div>
+				<div>评论</div>
+			</div>
+			<div class="investment-title-2">	            
+				
+	<span>
+		<a href="javascript: window.scrollTo(0, 0);">返回顶部</a>
+		
+			<a href="/2019/04/05/nodenv/" title="Nodenv管理Node版本" rel="prev">
+				&laquo;上一篇
+			</a>
+		
+		
+			<a href="/2018/03/05/redux/" title="Redux 原理" rel="next">
+				下一篇&raquo;
+			</a>
+			
+	</span>
+      		
+			</div>	
+		</div>
+		
+		<div class="investment-content">
+			<div class="investment-content-list">
+				
+
+<div class="relate-post">
+	<ul>
+		
+				<li>
+					<div>
+						<a href="/2019/11/09/github-action/" title="GitHub Action部署Hexo静态页面">
+							GitHub Action部署Hexo静态页面
+						</a>
+						<p>
+							GitHub Action部署Hexo静态页面每次部署博客都要本地手动执行 hexo deploy，很麻烦，现在GitHub推出了GitHub Action可以自动化执行部署操作。
+网上有很多创建GitHub Action的教程，这里...
+						</p>
+					</div>
+
+					<a href="/2019/11/09/github-action/" title="GitHub Action部署Hexo静态页面">				
+						<img src="https://image.cdn.renzhaosy.cn/post/github-action.jpg" class="relateImg" alt="GitHub Action部署Hexo静态页面">
+					</a>
+				</li>											
+		
+		
+				<li>
+					<div>
+						<a href="/2019/04/05/nodenv/" title="Nodenv管理Node版本">
+							Nodenv管理Node版本
+						</a>
+						<p>
+							Nodenv管理Node版本node安装 nodenv使用 nodenv 安装node
+1. 安装nodenv$ brew install nodenv
+
+2. 配置2.1 在 .bash_profile 中添加配置export PA...
+						</p>
+					</div>
+
+					<a href="/2019/04/05/nodenv/" title="Nodenv管理Node版本">				
+						<img src="https://image.cdn.renzhaosy.cn/post/node.jpeg" class="relateImg" alt="Nodenv管理Node版本">
+					</a>
+				</li>											
+		
+		
+				<li>
+					<div>
+						<a href="/2018/03/05/redux/" title="Redux 原理">
+							Redux 原理
+						</a>
+						<p>
+							Redux 原理前言最开始接触 react 技术栈的时候，最不容易懂的就是 redux 部分。很多新的名词 store、action、reducer、state、dispatch、middleware 等等。网上找到的 redux 教...
+						</p>
+					</div>
+
+					<a href="/2018/03/05/redux/" title="Redux 原理">				
+						<img src="https://image.cdn.renzhaosy.cn/random-img/1.jpg" class="relateImg" alt="Redux 原理">
+					</a>
+				</li>											
+		
+		
+				<li>
+					<div>
+						<a href="/2016/06/23/git/" title="git 常用命令">
+							git 常用命令
+						</a>
+						<p>
+							git 常用命令git 生成ssh keyssh-keygen -t rsa -C "your_email@example.com"
+
+git 用户信息git config --global user.name "Joiner"
+gi...
+						</p>
+					</div>
+
+					<a href="/2016/06/23/git/" title="git 常用命令">				
+						<img src="https://image.cdn.renzhaosy.cn/post/git.jpeg" class="relateImg" alt="git 常用命令">
+					</a>
+				</li>											
+		
+		
+	</ul>
+</div>	
+			</div>
+			<div class="investment-content-list">
+				<div class="layout-comment">
+
+	
+
+		
+
+			<!-- comment gitalk -->
+			<!-- show gitalk comment -->
+<div id="gitalk-container"></div>
+
+<!-- gitalk`s css & js -->
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<link rel="stylesheet" href="/css/comment.css">
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<script type="text/javascript">
+	//Thanks O-R
+	//https://github.com/gitalk/gitalk/issues/102#issuecomment-382970552
+	//去除尾部匹配正则数组的字符串  
+	//Remove redundant characters
+	String.prototype.trimEnd = function(regStr) {
+		var result = this;
+		if(regStr == undefined || regStr == null || regStr == "") {
+			return result;
+		}
+		var array = regStr.split(',');
+
+		if(array.length > 0) {
+
+			var c = array.shift();
+			var str = this;
+			var i = str.length;
+			var rg = new RegExp(c);
+			var matchArr = str.match(rg);
+
+			if(matchArr != undefined && matchArr != null && matchArr.length > 0) {
+				var matchStr = matchArr[0].replace(/\\/g, "\\\\").replace(/\*/g, "\\*")
+					.replace(/\+/g, "\\+").replace(/\|/g, "\\|")
+					.replace(/\{/g, "\\{").replace(/\}/g, "\\}")
+					.replace(/\(/g, "\\(").replace(/\)/g, "\\)")
+					.replace(/\^/g, "\\^").replace(/\$/g, "\\$")
+					.replace(/\[/g, "\\[").replace(/\]/g, "\\]")
+					.replace(/\?/g, "\\?").replace(/\,/g, "\\,")
+					.replace(/\./g, "\\.").replace(/\&/g, "\\&");
+				matchStr = matchStr + '$';
+				result = str.replace(new RegExp(matchStr), "");
+			}
+
+			if(array.length > 0) {
+				return result.trimEnd(array.join())
+			} else {
+				return result;
+			}
+		}
+	};
+
+	//Create gitalk
+	var gitalk = new Gitalk({
+		clientID: '3a36a56795c3b561c9ad',
+		clientSecret: '3da7ade2fbbf57128d1765d81eb6998d20cd32aa',
+		//id: window.location.pathname,
+		//id: decodeURI(window.location.pathname),
+		//id: (window.location.pathname).split("/").pop().substring(0, 49),
+		id: decodeURI( md5( location.href.trimEnd('#.*$,\\?.*$,index.html$') ) ),
+		repo: 'renzhaosy.github.io',
+		owner: 'renzhaosy',
+		admin: 'renzhaosy',
+		distractionFreeMode: 'true',
+	})
+	gitalk.render('gitalk-container');
+</script>
+
+		
+		
+	
+
+</div>
+			</div>
+		</div>	
+	</div>
+</div>
+
+
+
+	<!-- leancloud -->
+	<!--
+	时间：2018-11-27
+	描述：
+		文章访问量：visitors
+		文章喜欢量：likes	
+		文章排行榜：topNPost
+		其他得说明：
+			01-Cookie相关的函数 
+				https://blog.csdn.net/somehow1002/article/details/78511541（Author：somehow1002）
+			02-visitors相关的函数 
+				https://blog.csdn.net/u013553529/article/details/63357382（Author：爱博客大伯）
+				https://notes.doublemine.me/2015-10-21-为NexT主题添加文章阅读量统计功能.html（Author：夏末）
+			03-topNPost相关的函数
+				https://hoxis.github.io/hexo-next-read-rank.html（Author：hoxis）
+			04-likes相关的函数，
+				参考了01 & 02进行简单的设计与实现
+-->
+
+
+
+ 
+
+<!-- show math formula -->
+
+
+
+<script>
+	//Refer to https://xinyo.org/archives/66226, thanks xinyo!
+	function codeCopy() {
+		var copyContainerId = 'copy-nav';
+						
+		$("pre").before(" <nav class=' " + copyContainerId + " '><i class='code-language'></i></nav> ");
+		
+		$('.' + copyContainerId).append("<i class='fa fa-clipboard copy-btn' aria-hidden='true'></i>");
+		
+		$('#article-content').find('pre').each( function () {
+			var language = $(this).children('code').attr('class').substr(9);//why 9? Need to check language?
+			$(this).prev().find('.code-language').text( language );	
+		});
+				
+		//为复制按钮添加click事件
+		$('.copy-btn').on("click", function() {
+			//初始化
+			$("textarea").remove("#targetId");
+			
+			//获取对应的代码
+			var codePre = $(this).parent().next(),
+				codeText = codePre[0].textContent,
+				target = document.createElement("textarea");
+			target.style.position = "absolute";
+			target.style.left = "-9999px";
+			target.style.top = "0";
+			target.id = "targetId";
+			codePre.append(target);
+			target.textContent = codeText;
+
+			//选中textarea内的代码
+			target.focus();
+			target.setSelectionRange(0, target.value.length);
+
+			// 复制选中的内容
+			document.execCommand("copy");
+			
+			//删除添加的节点
+			$("textarea").remove("#targetId");
+			
+			var thisCopied = $(this);
+			thisCopied.addClass('copy-status');	
+			setTimeout( function() {
+				thisCopied.removeClass('copy-status');
+			}, 2000)
+		});	
+	}
+	
+	if( $('.layout-post').length )	{
+		codeCopy();
+	}
+</script>
+
+
+<!-- TODO: There seems to be a bug when you close the post gallery! -->
+<link rel="stylesheet" href="/plugin/lightgallery/css/lightgallery.css">
+<script src="/plugin/lightgallery/js/jquery-1.11.0.min.js"></script>
+<script src="/plugin/lightgallery/js/lightgallery-all.min.js"></script>
+
+<script type="text/javascript">
+	var postTitle = $('.article-title a').text() ? $('.article-title a').text() : "No post title!";
+	$('.article-content img').each(function() {
+		var imgPath = $(this).attr('src'),
+			imgTitle = $(this).attr('alt') ? $(this).attr('alt') : "No image description!";
+		$(this).wrap('<div class="img-responsive" data-src="' + imgPath + '" data-responsive="' + imgPath + '" data-sub-html="<p>图片 ' + imgTitle + '</p><h4>文章' + postTitle + '</h4>"></div>');
+	});
+
+	$('.article-content').lightGallery({
+		mode: 'lg-slide',
+		selector: '.img-responsive',
+		share: false,
+		zoom: false,
+		download: false
+	});
+	//TODO：支持video
+</script>
+
+<!--
+	时间：2018-11-17
+	描述：
+		插件名称：katelog.min.js
+		插件作者：KELEN
+		插件来源: https://github.com/KELEN/katelog
+-->
+
+		
+
+		<div class="k-catelog-list" id="catelog-list" data-title="文章目录"></div>
+		<script src="/plugin/toc/katelog.min.js"></script>
+
+		
+	
+		</main>
+		
+		<!--footer-->
+		<footer>
+	<div class="social">
+		<ul>
+	 
+</ul>
+	</div>
+		
+	<div class="copyright">
+		<p>
+			 
+				&copy;2019, content by Joiner Ren. All Rights Reserved.
+			
+			
+			
+
+	<!-- busuanzi -->
+	<!-- busuanzi -->
+
+
+
+		</p>
+		<p>
+			<a href="http://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a> Theme <a href="https://github.com/Sariay/hexo-theme-Annie" title="Annie" target="_blank" rel="noopener">Annie</a>. 					
+		</p>
+	</div>		
+</footer>
+		
+    <!-- set '1' to show motto in all pages! -->
+
+	<script src="/js/motto.js"></script>
+	<script type="text/javascript">
+		$(".motto").html( getMingYanContent() );
+	</script>	
+
+
+
+
+
+
+
+<!--back to top-->
+
+    
+	<div id="totop">
+  		<a href="javascript:;"  name="TOTOP" class="fa fa-arrow-up" ></a>
+	</div>
+	<div id="tobuttom">
+		<a href="javascript:;"  name="TOBUTTOM" class="fa fa-arrow-down" ></a>
+	</div>
+ 
+
+
+ 
+
+<script src="/js/vibrant.js"></script>
+<script src="/js/chinese.js"></script>
+<script src="/js/main.js"></script>
+
+    <script src="/js/task.js"></script>
+
+	</body>
+	</html>
